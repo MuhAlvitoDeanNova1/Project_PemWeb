@@ -1,4 +1,10 @@
-# React + Vite
+# CryptoFeed Frontend (Bagian dari Project_PemWeb)
+
+Ini adalah *frontend* dari aplikasi CryptoFeed, dibangun menggunakan React dan Vite.
+
+---
+
+## Template Setup (React + Vite)
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
