@@ -25,5 +25,18 @@
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "vite": "^7.1.7"
-  }
+  },
+  "description": "Ini adalah *frontend* dari aplikasi CryptoFeed, dibangun menggunakan React dan Vite.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MuhAlvitoDeanNova1/Project_PemWeb.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MuhAlvitoDeanNova1/Project_PemWeb/issues"
+  },
+  "homepage": "https://github.com/MuhAlvitoDeanNova1/Project_PemWeb#readme"
 }
