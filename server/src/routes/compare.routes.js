@@ -1,4 +1,3 @@
-// src/routes/compare.routes.js
 import { Router } from "express";
 import { authRequired } from "../middleware/auth.js";
 import { compareCoins } from "../controllers/compare.controller.js";

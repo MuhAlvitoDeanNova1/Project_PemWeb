@@ -1,15 +1,23 @@
 import { Router } from "express";
-import { getMarkets, getCoin, getCoinChart } from "../controllers/price.controller.js";
 
 const router = Router();
 
-// daftar market (untuk card BTC, ETH, SOL di dashboard)
-router.get("/markets", getMarkets);
+async function getSimplePrices(ids = "bitcoin,ethereum,solana") {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch prices");
+  return res.json();
+}
 
-// detail coin
-router.get("/:id", getCoin);
-
-// data chart (untuk grafik utama)
-router.get("/:id/chart", getCoinChart);
+router.get("/", async (req, res) => {
+  try {
+    const coins = req.query.coins || "bitcoin,ethereum,solana";
+    const data = await getSimplePrices(coins);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, message: "Failed to get prices" });
+  }
+});
 
 export default router;
