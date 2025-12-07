@@ -97,3 +97,20 @@ export async function getTradeHistory(token) {
   // backend seharusnya kirim: { ok: true, trades: [...] }
   return data.trades || [];
 }
+
+// MARKET HISTORY (untuk chart Market Overview)
+export async function getMarketHistory(range = "1D", coin = "bitcoin") {
+  const url = new URL(`${API_URL}/market`);
+  url.searchParams.set("range", range);
+  url.searchParams.set("coin", coin);
+
+  const res = await fetch(url.toString());
+  const data = await res.json();
+
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.message || "Gagal mengambil data historis market");
+  }
+
+  // points: [{ ts, price }]
+  return data.points || [];
+}

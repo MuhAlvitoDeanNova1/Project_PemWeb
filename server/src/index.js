@@ -10,6 +10,7 @@ import newsRoutes from "./routes/news.routes.js";
 import tradeRoutes from "./routes/trade.routes.js";
 import overviewRoutes from "./routes/overview.routes.js";
 import compareRoutes from "./routes/compare.routes.js";
+import marketRoutes from "./routes/market.routes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/news", newsRoutes);
 app.use("/trade", tradeRoutes);
 app.use("/overview", overviewRoutes);
 app.use("/compare", compareRoutes);
+app.use("/market", marketRoutes);
 
 const PORT = process.env.PORT || 4000;
 
