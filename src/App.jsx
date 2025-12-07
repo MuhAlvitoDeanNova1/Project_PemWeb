@@ -10,7 +10,10 @@ export default function App() {
   const [view, setView] = useState("login"); // login | register | dashboard
   const [token, setToken] = useState(null);
   const [email, setEmail] = useState("");
-  const [activePage, setActivePage] = useState("dashboard"); // dashboard | trade
+  // dashboard | trade | compare
+  const [activePage, setActivePage] = useState("dashboard");
+  // untuk mobile sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // restore session
   useEffect(() => {
@@ -36,21 +39,79 @@ export default function App() {
     localStorage.removeItem("cf_token");
     localStorage.removeItem("cf_email");
     setActivePage("dashboard");
+    setSidebarOpen(false);
   };
 
-  // DASHBOARD MODE
+  // ============ MODE DASHBOARD (SUDAH LOGIN) ============
   if (view === "dashboard" && token) {
+    const userName = email?.split("@")[0] || "";
+
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex">
-        <aside className="w-64 h-screen sticky top-0">
-          <Sidebar 
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col lg:flex-row">
+        {/* Top bar (MOBILE ONLY) */}
+        <header className="lg:hidden fixed top-0 inset-x-0 h-14 bg-slate-950 border-b border-slate-800 flex items-center justify-between px-4 z-30">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-500/40">
+              C
+            </div>
+            <div className="leading-tight">
+              <p className="text-[11px] text-slate-400">CRYPTO</p>
+              <p className="text-sm font-semibold tracking-wide">FEED</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-300 truncate max-w-[120px]">
+              {userName}
+            </span>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800"
+            >
+              {/* icon hamburger sederhana */}
+              <div className="space-y-1">
+                <span className="block w-4 h-[2px] bg-slate-200" />
+                <span className="block w-4 h-[2px] bg-slate-200" />
+                <span className="block w-4 h-[2px] bg-slate-200" />
+              </div>
+            </button>
+          </div>
+        </header>
+
+        {/* Overlay kalau sidebar dibuka (MOBILE) */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={`
+            fixed inset-y-0 left-0 z-40 w-64 bg-slate-950 border-r border-slate-800
+            transform transition-transform duration-200
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            lg:translate-x-0 lg:static lg:h-screen lg:overflow-y-auto lg:sticky lg:top-0
+          `}
+        >
+          <Sidebar
             onLogout={handleLogout}
             activeView={activePage}
-            onChangeView={setActivePage}
+            onChangeView={(page) => {
+              setActivePage(page);
+              setSidebarOpen(false); 
+            }}
           />
         </aside>
 
-        <main className="flex-1 overflow-y-auto">
+        {/* Konten utama */}
+        <main
+          className="
+            flex-1 overflow-y-auto
+            pt-14 lg:pt-0
+            lg:ml-0
+          "
+        >
           {activePage === "dashboard" && (
             <Dashboard email={email} token={token} />
           )}
@@ -61,7 +122,7 @@ export default function App() {
     );
   }
 
-  // AUTH MODE (LOGIN / REGISTER)
+  // ============ MODE AUTH (LOGIN / REGISTER) ============
   const isLogin = view === "login";
 
   return (
@@ -89,7 +150,7 @@ export default function App() {
         </div>
 
         {/* Right form */}
-        <div className="px-8 py-8 lg:px-10 lg:py-10 bg-slate-950/85">
+        <div className="px-6 py-8 sm:px-8 lg:px-10 lg:py-10 bg-slate-950/85 w-full">
           {isLogin ? (
             <Login
               onLoginSuccess={handleLoginSuccess}

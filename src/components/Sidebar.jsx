@@ -79,3 +79,19 @@ export default function Sidebar({ onLogout, activeView, onChangeView }) {
     </div>
   );
 }
+
+function SidebarItem({ icon: Icon, label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition
+        ${active
+          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          : "text-slate-200 hover:bg-slate-800/80"
+        }`}
+    >
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </button>
+  );
+}
