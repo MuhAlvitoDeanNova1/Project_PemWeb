@@ -3,11 +3,13 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Sidebar from "./components/Sidebar.jsx";
+import TradeDemo from "./pages/TradeDemo.jsx";
 
 export default function App() {
   const [view, setView] = useState("login"); // login | register | dashboard
   const [token, setToken] = useState(null);
   const [email, setEmail] = useState("");
+  const [activePage, setActivePage] = useState("dashboard"); // dashboard | trade
 
   // restore session
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function App() {
     setView("login");
     localStorage.removeItem("cf_token");
     localStorage.removeItem("cf_email");
+    setActivePage("dashboard");
   };
 
   // DASHBOARD MODE
@@ -39,11 +42,18 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex">
         <aside className="w-64 h-screen sticky top-0">
-          <Sidebar onLogout={handleLogout} />
+          <Sidebar 
+            onLogout={handleLogout}
+            activeView={activePage}
+            onChangeView={setActivePage}
+          />
         </aside>
 
         <main className="flex-1 overflow-y-auto">
-          <Dashboard email={email} token={token} />
+          {activePage === "dashboard" && (
+            <Dashboard email={email} token={token} />
+          )}
+          {activePage === "trade" && <TradeDemo token={token} />}
         </main>
       </div>
     );

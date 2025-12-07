@@ -56,6 +56,44 @@ export async function getNews(token, coin) {
     throw new Error(data.message || "Gagal mengambil berita");
   }
 
-  // backend sekarang mengirim: { ok, total, articles: [...] }
   return data.articles || [];
+}
+
+// TRADE
+export async function createTrade(token, payload) {
+  const res = await fetch(`${API_URL}/trade`, {   // ⬅️ SINGULAR, sesuai backend
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.message || "Gagal menyimpan trade");
+  }
+
+  // backend kamu balas: { ok: true, message: "Trade executed", trade: {...} }
+  return data.trade;
+}
+
+// RIWAYAT TRADE
+export async function getTradeHistory(token) {
+  const res = await fetch(`${API_URL}/trade/history`, {  // ⬅️ juga /trade
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.message || "Gagal mengambil riwayat trade");
+  }
+
+  // backend seharusnya kirim: { ok: true, trades: [...] }
+  return data.trades || [];
 }

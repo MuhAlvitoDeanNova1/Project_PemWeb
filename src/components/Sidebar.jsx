@@ -7,7 +7,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar({ onLogout, activeView, onChangeView }) {
   return (
     <div className="h-full w-64 bg-slate-950 border-r border-slate-800 text-white flex flex-col justify-between px-5 py-6">
       <div>
@@ -22,17 +22,33 @@ export default function Sidebar({ onLogout }) {
         </div>
 
         <nav className="space-y-2 text-sm">
-          <div className="flex items-center px-3 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow shadow-blue-500/40">
+          <button
+            className={`flex w-full items-center px-3 py-2 rounded-xl transition ${
+              activeView === "dashboard"
+                ? "bg-blue-600 text-white font-semibold shadow shadow-blue-500/40"
+                : "hover:bg-slate-800"
+            }`}
+            onClick={() => onChangeView("dashboard")}
+          >
             <LayoutDashboard className="w-4 h-4 mr-3" />
             <span>Dashboard</span>
-          </div>
-          <button className="flex w-full items-center px-3 py-2 rounded-xl hover:bg-slate-800 transition">
+          </button>
+
+          <button
+            className={`flex w-full items-center px-3 py-2 rounded-xl transition ${
+              activeView === "trade"
+                ? "bg-emerald-600 text-white font-semibold shadow shadow-emerald-500/40"
+                : "hover:bg-slate-800"
+            }`}
+            onClick={() => onChangeView("trade")}
+          >
             <BarChart3 className="w-4 h-4 mr-3" />
             <span>Trade (Demo)</span>
           </button>
+
           <button className="flex w-full items-center px-3 py-2 rounded-xl hover:bg-slate-800 transition">
             <Wallet className="w-4 h-4 mr-3" />
-            <span>Wallet</span>
+            <span>Wallet (Coming Soon)</span>
           </button>
         </nav>
       </div>
