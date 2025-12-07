@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { authRequired } from "../middleware/auth.js";
 import { compareCoins } from "../controllers/compare.controller.js";
 
 const router = Router();
 
-// boleh aja compare tanpa login, tapi kalau mau khusus user, pakai authRequired
-router.get("/", authRequired, compareCoins);
+// GET /compare?coins=bitcoin,ethereum,solana
+router.get("/", compareCoins);
 
 export default router;

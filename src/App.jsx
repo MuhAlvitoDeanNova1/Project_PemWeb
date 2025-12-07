@@ -4,6 +4,7 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import TradeDemo from "./pages/TradeDemo.jsx";
+import Compare from "./pages/Compare.jsx";
 
 export default function App() {
   const [view, setView] = useState("login"); // login | register | dashboard
@@ -54,6 +55,7 @@ export default function App() {
             <Dashboard email={email} token={token} />
           )}
           {activePage === "trade" && <TradeDemo token={token} />}
+          {activePage === "compare" && <Compare token={token} />}
         </main>
       </div>
     );

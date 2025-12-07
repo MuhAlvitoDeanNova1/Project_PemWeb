@@ -114,3 +114,20 @@ export async function getMarketHistory(range = "1D", coin = "bitcoin") {
   // points: [{ ts, price }]
   return data.points || [];
 }
+
+
+// COMPARE COINS
+export async function compareCoinsApi(coinIds = ["bitcoin", "ethereum", "solana"]) {
+  const params = new URLSearchParams({
+    coins: coinIds.join(","),
+  });
+
+  const res = await fetch(`${API_URL}/compare?${params.toString()}`);
+  const data = await res.json();
+
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.message || "Gagal mengambil data perbandingan coin");
+  }
+
+  return data.coins || [];
+}

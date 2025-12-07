@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { DollarSign, Lock, User, ArrowRight } from "lucide-react";
-import { getPrices, getNews, getTradeHistory, getMarketHistory } from "../services/api";
+import {
+  getPrices,
+  getNews,
+  getTradeHistory,
+  getMarketHistory,
+} from "../services/api";
 import {
   LineChart,
   Line,
@@ -12,19 +17,67 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import btcLogo from "../assets/btc.svg";
+import ethLogo from "../assets/eth.png";
+import solLogo from "../assets/sol.png";
 
 const INITIAL_CASH = 10000;
 
-const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
-  <div className="bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 flex flex-col justify-between">
-    <div className="flex items-center justify-between mb-2">
-      <p className="text-xs text-gray-400">{title}</p>
-      {Icon && <Icon className={`w-4 h-4 ${colorClass}`} />}
+const COIN_META = {
+  bitcoin: {
+    id: "bitcoin",
+    symbol: "BTC",
+    label: "Bitcoin",
+    colorClass: "text-orange-400",
+  },
+  ethereum: {
+    id: "ethereum",
+    symbol: "ETH",
+    label: "Ethereum",
+    colorClass: "text-blue-400",
+  },
+  solana: {
+    id: "solana",
+    symbol: "SOL",
+    label: "Solana",
+    colorClass: "text-purple-400",
+  },
+};
+
+const StatCard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  colorClass,
+  onClick,
+  active,
+  iconImg,
+}) => {
+  const baseClasses =
+    "bg-slate-900/80 border rounded-2xl px-4 py-3 flex flex-col justify-between transition cursor-pointer";
+  const borderClass = active
+    ? "border-emerald-500 ring-1 ring-emerald-500"
+    : "border-slate-800 hover:border-slate-600";
+  return (
+    <div className={`${baseClasses} ${borderClass}`} onClick={onClick}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-gray-400">{title}</p>
+        {iconImg ? (
+          <img
+            src={iconImg}
+            alt={title}
+            className="w-5 h-5 object-contain"
+          />
+        ) : Icon ? (
+          <Icon className={`w-4 h-4 ${colorClass}`} />
+        ) : null}
+      </div>
+      <p className="text-xl font-semibold">{value}</p>
+      {subtitle && <p className="text-[11px] text-gray-400 mt-1">{subtitle}</p>}
     </div>
-    <p className="text-xl font-semibold">{value}</p>
-    {subtitle && <p className="text-[11px] text-gray-400 mt-1">{subtitle}</p>}
-  </div>
-);
+  );
+};
 
 const formatMoney = (v) =>
   typeof v === "number"
@@ -45,12 +98,16 @@ const Dashboard = ({ userName, token }) => {
   const [overviewError, setOverviewError] = useState("");
 
   const [equityRange, setEquityRange] = useState("1M"); // 1D, 1W, 1M, ALL
-  const [marketRange, setMarketRange] = useState("1M"); // 1D, 1W, 1M
 
+  // MARKET OVERVIEW STATE
+  const [marketRange, setMarketRange] = useState("1M"); // 1D, 1W, 1M
+  const [selectedCoin, setSelectedCoin] = useState("bitcoin"); // bitcoin | ethereum | solana
   const [marketData, setMarketData] = useState([]);
   const [marketDomain, setMarketDomain] = useState([0, 0]);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketError, setMarketError] = useState("");
+
+  const selectedMeta = COIN_META[selectedCoin];
 
   // ================= PRICES =================
   useEffect(() => {
@@ -76,7 +133,7 @@ const Dashboard = ({ userName, token }) => {
         setNewsLoading(true);
         setNewsError("");
         const data = await getNews(token);
-        setNews(data.slice(0, 6)); // ambil sebagian
+        setNews(data.slice(0, 6));
       } catch (err) {
         setNewsError(err.message || "Gagal mengambil berita");
       } finally {
@@ -138,17 +195,14 @@ const Dashboard = ({ userName, token }) => {
         const dt = t.createdAt ? new Date(t.createdAt) : new Date();
         const ts = dt.getTime();
 
-
         history.push({
           idx: idx + 1,
           equity: Number(equity.toFixed(2)),
           ts,
-          // untuk range mingguan/bulanan
           labelDate: dt.toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",
           }),
-          // untuk range harian (per jam)
           labelTime: dt.toLocaleTimeString("id-ID", {
             hour: "2-digit",
             minute: "2-digit",
@@ -208,69 +262,45 @@ const Dashboard = ({ userName, token }) => {
     return overview.history.filter((h) => now - h.ts <= diff);
   }, [overview, equityRange]);
 
-  // ================= MARKET OVERVIEW DUMMY DATA + RANGE =================
-  // const marketChart = useMemo(() => {
-  //   const base = prices?.bitcoin?.usd || 30000;
-  //   let points;
-  //   if (marketRange === "1D") points = 24; // 24 jam
-  //   else if (marketRange === "1W") points = 7; // 7 hari
-  //   else points = 30; // 30 hari
 
-  //   const data = [];
-  //   let current = base;
+  const equityDomain = useMemo(() => {
+  if (!filteredEquityData || filteredEquityData.length === 0) {
+    return ["auto", "auto"];
+  }
 
-  //   for (let i = points - 1; i >= 0; i--) {
-  //     const t =
-  //       marketRange === "1D"
-  //         ? `${String(24 - i).padStart(2, "0")}:00`
-  //         : `D-${i}`;
+  const values = filteredEquityData.map((p) => p.equity);
+  let min = Math.min(...values);
+  let max = Math.max(...values);
 
-  //     // random walk kecil2an (±1% dari base per langkah)
-  //     const change = (Math.random() - 0.5) * (base * 0.01);
-  //     current = Math.max(base * 0.7, current + change);
+  let range = max - min;
 
-  //     data.push({
-  //       time: t,
-  //       price: Number(current.toFixed(2)),
-  //     });
-  //   }
+  const minRange = (max || 1) * 0.02;
+  if (range < minRange) {
+    range = minRange;
+  }
 
-  //   // hitung min & max untuk domain dinamis
-  //   let minPrice = data[0]?.price ?? base;
-  //   let maxPrice = data[0]?.price ?? base;
+  const padding = range * 0.1;
 
-  //   data.forEach((d) => {
-  //     if (d.price < minPrice) minPrice = d.price;
-  //     if (d.price > maxPrice) maxPrice = d.price;
-  //   });
+  min = min - padding;
+  max = max + padding;
 
-  //   // kalau range terlalu kecil, kasih minimal range 1% dari base
-  //   let range = maxPrice - minPrice;
-  //   const minRange = base * 0.01;
-  //   if (range < minRange) range = minRange;
+  return [min, max];
+}, [filteredEquityData]);
 
-  //   // padding 10% di atas & bawah agar chart tidak flat/nempel
-  //   const padding = range * 0.1;
-  //   const minY = Math.max(0, minPrice - padding);
-  //   const maxY = maxPrice + padding;
-
-  //   return { data, minY, maxY };
-  // }, [prices, marketRange]);
-
-    useEffect(() => {
+  // ================= MARKET OVERVIEW DARI API HISTORIS =================
+  useEffect(() => {
     const fetchMarket = async () => {
       try {
         setMarketLoading(true);
         setMarketError("");
         setMarketData([]);
 
-        const points = await getMarketHistory(marketRange, "bitcoin");
+        const points = await getMarketHistory(marketRange, selectedCoin);
         if (!points || points.length === 0) {
           setMarketData([]);
           return;
         }
 
-        // hitung min & max
         let minPrice = points[0].price;
         let maxPrice = points[0].price;
 
@@ -279,7 +309,13 @@ const Dashboard = ({ userName, token }) => {
           if (p.price > maxPrice) maxPrice = p.price;
         });
 
-        const base = prices?.bitcoin?.usd || maxPrice || 1;
+        const currentPriceMap = {
+          bitcoin: prices?.bitcoin?.usd,
+          ethereum: prices?.ethereum?.usd,
+          solana: prices?.solana?.usd,
+        };
+
+        const base = currentPriceMap[selectedCoin] || maxPrice || 1;
         let range = maxPrice - minPrice;
         const minRange = base * 0.01; // minimal range 1% dari harga sekarang
 
@@ -289,7 +325,6 @@ const Dashboard = ({ userName, token }) => {
         const minY = Math.max(0, minPrice - padding);
         const maxY = maxPrice + padding;
 
-        // format data untuk chart (label waktu)
         const formatted = points.map((p) => {
           const d = new Date(p.ts);
           const label =
@@ -322,7 +357,7 @@ const Dashboard = ({ userName, token }) => {
     };
 
     fetchMarket();
-  }, [marketRange, prices]);
+  }, [marketRange, selectedCoin, prices]);
 
   const formatPrice = (val) =>
     typeof val === "number" ? `$${val.toLocaleString()}` : "-";
@@ -346,7 +381,7 @@ const Dashboard = ({ userName, token }) => {
           </div>
         </header>
 
-        {/* PRICE STAT CARDS */}
+        {/* PRICE STAT CARDS (CLICKABLE) */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="BTC Price"
@@ -356,24 +391,27 @@ const Dashboard = ({ userName, token }) => {
                 ? "Memuat..."
                 : pricesError
                 ? pricesError
-                : "Data dari API publik"
+                : "Klik untuk lihat overview BTC"
             }
-            icon={DollarSign}
-            colorClass="text-orange-400"
+            iconImg={btcLogo}
+            onClick={() => setSelectedCoin("bitcoin")}
+            active={selectedCoin === "bitcoin"}
           />
           <StatCard
             title="ETH Price"
             value={formatPrice(prices?.ethereum?.usd)}
-            subtitle=""
-            icon={DollarSign}
-            colorClass="text-blue-400"
+            subtitle="Klik untuk lihat overview ETH"
+            iconImg={ethLogo}
+            onClick={() => setSelectedCoin("ethereum")}
+            active={selectedCoin === "ethereum"}
           />
           <StatCard
             title="SOL Price"
             value={formatPrice(prices?.solana?.usd)}
-            subtitle=""
-            icon={DollarSign}
-            colorClass="text-purple-400"
+            subtitle="Klik untuk lihat overview SOL"
+            iconImg={solLogo}
+            onClick={() => setSelectedCoin("solana")}
+            active={selectedCoin === "solana"}
           />
           <StatCard
             title="Open Trades (Demo)"
@@ -387,7 +425,15 @@ const Dashboard = ({ userName, token }) => {
         {/* MARKET OVERVIEW CHART */}
         <section className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Market Overview (BTC/USDT)</h2>
+            <div>
+              <h2 className="text-lg font-semibold">
+                Market Overview ({selectedMeta.symbol}/USDT)
+              </h2>
+              <p className="text-xs text-gray-400">
+                Data historis dari API publik (CoinGecko) untuk{" "}
+                {selectedMeta.label}.
+              </p>
+            </div>
             <div className="flex items-center gap-2 text-xs">
               <button
                 onClick={() => setMarketRange("1D")}
@@ -425,7 +471,7 @@ const Dashboard = ({ userName, token }) => {
           <div className="h-64 bg-slate-950 rounded-xl border border-slate-800 px-2 py-2">
             {marketLoading && (
               <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">
-                Mengambil data historis harga BTC...
+                Mengambil data historis harga {selectedMeta.symbol}...
               </div>
             )}
 
@@ -459,7 +505,7 @@ const Dashboard = ({ userName, token }) => {
                       border: "1px solid #1f2937",
                       fontSize: 12,
                     }}
-                    formatter={(value) => [formatMoney(value), "BTC Price"]}
+                    formatter={(value) => [formatMoney(value), "Price"]}
                   />
                   <Area
                     type="monotone"
@@ -478,7 +524,6 @@ const Dashboard = ({ userName, token }) => {
               </div>
             )}
           </div>
-
         </section>
 
         {/* DEMO PORTFOLIO SNAPSHOT + EQUITY CHART */}
@@ -572,6 +617,7 @@ const Dashboard = ({ userName, token }) => {
                       tick={{ fontSize: 10, fill: "#9ca3af" }}
                     />
                     <YAxis
+                      domain={equityDomain}
                       tick={{ fontSize: 10, fill: "#9ca3af" }}
                       tickFormatter={(v) =>
                         v.toLocaleString(undefined, {
@@ -610,7 +656,7 @@ const Dashboard = ({ userName, token }) => {
           </div>
         </section>
 
-        {/* NEWS SECTION – bentuk seperti sebelumnya, bisa scroll & klik */}
+        {/* NEWS SECTION */}
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-3">Crypto News Feed</h2>
 
@@ -626,7 +672,6 @@ const Dashboard = ({ userName, token }) => {
               {news.map((item) => (
                 <div key={item.id || item.url} className="w-80 flex-shrink-0">
                   <article className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden h-full flex flex-col">
-                    {/* Kalau API tidak punya image, kamu bisa tambah thumbnail statis di sini */}
                     <div className="p-4 flex flex-col flex-1">
                       <p className="text-[11px] text-gray-400 mb-1">
                         {item.source || "Crypto news"}
@@ -639,12 +684,15 @@ const Dashboard = ({ userName, token }) => {
                       </p>
                       {item.publishedAt && (
                         <p className="text-[11px] text-gray-500 mb-3">
-                          {new Date(item.publishedAt).toLocaleString("id-ID", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(item.publishedAt).toLocaleString(
+                            "id-ID",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
                         </p>
                       )}
                       {item.url && (
@@ -670,7 +718,6 @@ const Dashboard = ({ userName, token }) => {
             </div>
           </div>
 
-          {/* sembunyikan scrollbar di webkit */}
           <style jsx="true">{`
             .scrollbar-hide::-webkit-scrollbar {
               display: none;
