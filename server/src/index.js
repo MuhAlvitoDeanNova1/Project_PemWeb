@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://crypto-feed-backend.vercel.app/", // ganti dengan URL vercel kamu
+      "https://crypto-feed.vercel.app/", // ganti dengan URL vercel kamu
     ],
     credentials: true,
     allowedHeaders: ["Authorization", "Content-Type"],
