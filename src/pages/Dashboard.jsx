@@ -317,11 +317,11 @@ const Dashboard = ({ userName, token }) => {
 
         const base = currentPriceMap[selectedCoin] || maxPrice || 1;
         let range = maxPrice - minPrice;
-        const minRange = base * 0.01; // minimal range 1% dari harga sekarang
+        const minRange = base * 0.01;
 
         if (range < minRange) range = minRange;
 
-        const padding = range * 0.1; // padding 10%
+        const padding = range * 0.1;
         const minY = Math.max(0, minPrice - padding);
         const maxY = maxPrice + padding;
 

@@ -19,9 +19,11 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      process.env.FRONTEND_ORIGIN    // diisi URL Vercel
+      "https://crypto-feed-backend.vercel.app/", // ganti dengan URL vercel kamu
     ],
     credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 app.use(express.json());

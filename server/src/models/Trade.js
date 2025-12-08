@@ -8,7 +8,7 @@ const tradeSchema = new mongoose.Schema(
       required: true,
     },
     symbol: {
-      type: String, // contoh: "BTC", "ETH"
+      type: String,
       required: true,
     },
     side: {
